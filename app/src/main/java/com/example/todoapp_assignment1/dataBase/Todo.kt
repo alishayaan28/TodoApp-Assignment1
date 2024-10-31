@@ -9,16 +9,17 @@ import com.example.todoapp_assignment1.models.TodoItems
 import com.example.todoapp_assignment1.models.TodoList
 
 class TodoHelper(context: Context)
-    : SQLiteOpenHelper(context, "todoList.db", null, 1 ) {
+    : SQLiteOpenHelper(context, "todoList.db", null, 2 ) {
 
     override fun onCreate(dataBase: SQLiteDatabase?) {
         dataBase?.execSQL("CREATE TABLE TODOLIST( id INTEGER PRIMARY KEY, listName Text)")
-        dataBase?.execSQL("CREATE TABLE TODOIitems( id INTEGER PRIMARY KEY, listId INTEGER, name TEXT, dueDate TEXT, complete INTEGER)")
+        dataBase?.execSQL("CREATE TABLE TODOItems( id INTEGER PRIMARY KEY, listId INTEGER, name TEXT, dueDate TEXT, complete INTEGER)")
     }
 
     override fun onUpgrade(dataBase: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         dataBase?.execSQL("DROP TABLE IF EXISTS TODOLIST")
-        dataBase?.execSQL("DROP TABLE IF EXISTS TODOIitems")
+        dataBase?.execSQL("DROP TABLE IF EXISTS TODOItems")
+        onCreate(dataBase)
     }
 
 
@@ -68,9 +69,30 @@ class TodoHelper(context: Context)
             put("dueDate", todoItems.dueDate)
             put("complete", todoItems.isComplete)
         }
-        val id = db.insert("TODOLIST", null, values)
+        val id = db.insert("TODOItems", null, values)
         db.close()
         return id
+    }
+
+    // Get Data Function for todoItems
+    fun getAllListItems(uid: Int): List<TodoItems>{
+        val itemList = mutableListOf<TodoItems>()
+        val db = readableDatabase
+        val cursor: Cursor = db.rawQuery("SELECT * FROM TODOItems WHERE listId = ?", arrayOf(uid.toString()))
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val listName = cursor.getInt(cursor.getColumnIndexOrThrow("listId"))
+                val name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("dueDate"))
+                val complete = cursor.getInt(cursor.getColumnIndexOrThrow("complete"))
+                itemList.add(TodoItems(id, listName, name, dueDate, complete))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return itemList
     }
 
 
