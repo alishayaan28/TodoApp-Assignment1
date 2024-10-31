@@ -202,14 +202,22 @@ class MainActivity : ComponentActivity() {
                      TextButton(
                          onClick = {
                              val data = todoHelper.addListItems(TodoList(0, inputText))
-                             if (data != -1L){
-                                 inputText = ""
-                                 showDialog = false
-                                 fetchSaveData()
-                             }else{
-                                 Toast.makeText(this@MainActivity, "List with same name Already Exit. " +
-                                         "Please write another name.",Toast.LENGTH_SHORT).show()
+
+                             if( inputText.isNotEmpty()){
+                                 if (data != -1L){
+                                     inputText = ""
+                                     showDialog = false
+                                     fetchSaveData()
+                                 }else{
+                                     Toast.makeText(this@MainActivity, "List with same name Already Exit. " +
+                                             "Please write another name.",Toast.LENGTH_SHORT).show()
+                                 }
                              }
+                             else{
+                                 Toast.makeText(this@MainActivity, "Please Enter List name.",Toast.LENGTH_SHORT).show()
+                             }
+
+
 
                          }
                      ) {
@@ -252,6 +260,7 @@ class MainActivity : ComponentActivity() {
                  dismissButton = {
                      TextButton(
                          onClick = {
+                             inputText = ""
                              showDialog = false
                          }
                      ) {
