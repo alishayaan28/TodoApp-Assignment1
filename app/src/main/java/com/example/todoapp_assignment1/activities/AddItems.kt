@@ -2,10 +2,12 @@ package com.example.todoapp_assignment1.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -32,7 +34,9 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -69,6 +73,7 @@ import com.example.todoapp_assignment1.activities.ui.theme.TodoAppAssignment1The
 import com.example.todoapp_assignment1.dataBase.TodoHelper
 import com.example.todoapp_assignment1.models.TodoItems
 import com.example.todoapp_assignment1.models.TodoList
+import com.example.todoapp_assignment1.ui.theme.lightGrey
 import com.example.todoapp_assignment1.ui.theme.poppins
 import com.example.todoapp_assignment1.ui.theme.primaryColor
 import java.text.SimpleDateFormat
@@ -94,7 +99,6 @@ class AddItems : ComponentActivity() {
 
         // Getting id of list
        uid = intent.getIntExtra("uid", 0)
-        Toast.makeText(this@AddItems, "..$uid",Toast.LENGTH_SHORT).show()
 
 
         super.onCreate(savedInstanceState)
@@ -272,9 +276,20 @@ class AddItems : ComponentActivity() {
     fun ShowItemData(){
         LazyColumn {
             itemsIndexed(todoListItems){ index, data ->
-                Card {
-                    Row {
-                        Column{
+                Card (
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp),
+                    colors = CardDefaults.cardColors(Color.White),
+                    border = BorderStroke(1.dp, lightGrey)
+                ) {
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        CheckBox()
+                        Column (
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Center
+                        ){
                             Text(
                                 text = todoListItems[index].name,
                                 modifier = Modifier.padding(4.dp),
@@ -305,6 +320,21 @@ class AddItems : ComponentActivity() {
             }
         }
 
+    }
+
+    // checkBox
+    @Composable
+    fun CheckBox(){
+
+        val check = remember { mutableStateOf(false) }
+
+        Checkbox(
+            checked = check.value,
+            onCheckedChange = {
+
+            }
+
+        )
     }
 
 

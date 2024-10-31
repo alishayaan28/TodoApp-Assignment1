@@ -141,44 +141,50 @@ class MainActivity : ComponentActivity() {
                         paddingValues ->
                         Box(modifier = Modifier.padding(paddingValues)){
                            Column {
-                               Text(
-                                   text = "My Lists",
-                                   modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 5.dp),
-                                   color = Color.Black,
-                                   style = TextStyle(
-                                       fontFamily = poppins,
-                                       fontWeight = FontWeight.W600,
-                                       fontSize = 18.sp
+
+                               if(todoList.isEmpty()){
+                                   Column{
+                                       Text(
+                                           text = "No Data Found",
+                                           modifier = Modifier.padding(4.dp),
+                                           color = Color.Black,
+                                           style = TextStyle(
+                                               fontFamily = poppins,
+                                               fontWeight = FontWeight.W500,
+                                               fontSize = 16.sp
+                                           )
+
+                                       )
+                                   }
+
+                               }else{
+
+                                   Text(
+                                       text = "My Lists",
+                                       modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 5.dp),
+                                       color = Color.Black,
+                                       style = TextStyle(
+                                           fontFamily = poppins,
+                                           fontWeight = FontWeight.W600,
+                                           fontSize = 18.sp
+                                       )
+
                                    )
+                                   Card (
+                                       modifier = Modifier
+                                           .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                                           .fillMaxWidth(),
+                                       colors = CardDefaults.cardColors(
+                                           containerColor = lightGrey
+                                       )
+                                   ) {
+                                       DisplaySaveData(context = LocalContext.current)
+                                   }
 
-                               )
-                               Card (
-                                   modifier = Modifier
-                                       .padding(start = 10.dp, end = 10.dp, top = 5.dp)
-                                       .fillMaxWidth(),
-                                   colors = CardDefaults.cardColors(
-                                       containerColor = lightGrey
-                                   )
-                               ) {
-                                  if(todoList.isEmpty()){
-                                      Column {
-                                          Text(
-                                              text = "No Data Found",
-                                              modifier = Modifier.padding(4.dp),
-                                              color = Color.Black,
-                                              style = TextStyle(
-                                                  fontFamily = poppins,
-                                                  fontWeight = FontWeight.W500,
-                                                  fontSize = 16.sp
-                                              )
 
-                                          )
-                                      }
-
-                                  }else{
-                                      DisplaySaveData(context = LocalContext.current)
-                                  }
                                }
+
+
                            }
                         }
                     }
@@ -293,8 +299,6 @@ class MainActivity : ComponentActivity() {
                         onClick = {
                             val intent = Intent(this@MainActivity, AddItems::class.java)
                             intent.putExtra("uid", item.id)
-                            Toast.makeText(this@MainActivity, "uid ${item.id}",Toast.LENGTH_SHORT).show()
-
                             startActivity(intent)
                         }
                     )
