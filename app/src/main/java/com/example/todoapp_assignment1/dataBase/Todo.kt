@@ -9,7 +9,7 @@ import com.example.todoapp_assignment1.models.TodoItems
 import com.example.todoapp_assignment1.models.TodoList
 
 class TodoHelper(context: Context)
-    : SQLiteOpenHelper(context, "todoList.db", null, 2 ) {
+    : SQLiteOpenHelper(context, "todoList.db", null, 3 ) {
 
     override fun onCreate(dataBase: SQLiteDatabase?) {
         dataBase?.execSQL("CREATE TABLE TODOLIST( id INTEGER PRIMARY KEY, listName Text)")
@@ -94,6 +94,30 @@ class TodoHelper(context: Context)
         db.close()
         return itemList
     }
+
+    // Delete Function for todoItems
+    fun deleteItems(itemId: Int): Int {
+        writableDatabase.use { database -> return database.delete("TODOItems", "id= ?", arrayOf(itemId.toString()))}
+    }
+
+    // Function for check task is completed or not
+    fun updateCompleteState(itemId : Int, isComplete : Int) : Int{
+        val db = writableDatabase
+        val completeState = ContentValues().apply {
+            put("complete", isComplete)
+        }
+        return db.update("TODOItems", completeState, "id= ?", arrayOf(itemId.toString()))
+    }
+
+    // Function for check task is completed or not
+    fun updateListName(itemId : Int, listName : String) : Int{
+        val db = writableDatabase
+        val listState = ContentValues().apply {
+            put("listName", listName)
+        }
+        return db.update("TODOLIST", listState, "id= ?", arrayOf(itemId.toString()))
+    }
+
 
 
 

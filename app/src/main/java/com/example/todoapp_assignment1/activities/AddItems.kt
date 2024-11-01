@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,15 +32,21 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -180,7 +187,21 @@ class AddItems : ComponentActivity() {
                     content = {
                             paddingValues ->
                         Box(modifier = Modifier.padding(paddingValues)){
-                            ShowItemData()
+                           if(todoListItems.isNotEmpty()){
+                               ShowItemData()
+                           }else{
+                               Text(
+                                   text = "No Data Found",
+                                   modifier = Modifier.padding(4.dp),
+                                   color = Color.Black,
+                                   style = TextStyle(
+                                       fontFamily = poppins,
+                                       fontWeight = FontWeight.W500,
+                                       fontSize = 16.sp
+                                   )
+
+                               )
+                           }
 
                         }
                     }
@@ -284,7 +305,7 @@ class AddItems : ComponentActivity() {
                     Row (
                         verticalAlignment = Alignment.CenterVertically
                     ){
-                        CheckBox()
+                        CheckBox(data.id, todoHelper, data.isComplete)
                         Column (
                             modifier = Modifier.padding(8.dp),
                             horizontalAlignment = Alignment.Start,
@@ -314,6 +335,7 @@ class AddItems : ComponentActivity() {
 
                             )
                         }
+                        PopUpMenu(data.id, todoHelper)
                     }
                 }
 
@@ -324,19 +346,175 @@ class AddItems : ComponentActivity() {
 
     // checkBox
     @Composable
-    fun CheckBox(){
+    fun CheckBox(itemId : Int , todoHandler : TodoHelper, complete : Int){
 
-        val check = remember { mutableStateOf(false) }
+        val check = remember { mutableStateOf(complete != 0) }
 
         Checkbox(
             checked = check.value,
+            colors = CheckboxDefaults.colors(primaryColor),
             onCheckedChange = {
-
+                val comVal = if(complete ==0 ){
+                    1 // true
+                }else{
+                    0 // false
+                }
+                todoHandler.updateCompleteState(itemId, comVal)
+                fetchSaveData()
+                check.value = comVal != 0
             }
-
         )
     }
 
+
+    // PopUp Menu for performing other functionality in my app
+    @Composable
+    fun PopUpMenu(itemId : Int , todoHandler : TodoHelper){
+
+        val extend = remember { mutableStateOf(false) }
+        var showDelete by remember { mutableStateOf(false) }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(
+                    Alignment.TopEnd
+                )
+        ){
+            IconButton(
+                onClick = {
+                    extend.value = !extend.value
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "More",
+                    tint = Color.Black
+                )
+            }
+            DropdownMenu(
+                expanded = extend.value,
+                onDismissRequest = {
+                    extend.value = false
+                },
+                modifier = Modifier.background(Color.White)
+            ) {
+
+                // move item from one list to another
+                DropdownMenuItem(
+                    text = { Text("Move",
+                        style = TextStyle(
+                            fontFamily = poppins,
+                            fontWeight = FontWeight.W500,
+                            fontSize = 14.sp
+                        )
+                    )
+
+                    },
+                    onClick = {
+                        extend.value = false
+                    }
+                )
+
+                // edit saved items
+                DropdownMenuItem(
+                    text = { Text("Edit",
+                        style = TextStyle(
+                            fontFamily = poppins,
+                            fontWeight = FontWeight.W500,
+                            fontSize = 14.sp
+                        )
+                    )
+
+                    },
+                    onClick = {
+                        extend.value = false
+                    }
+                )
+
+                // delete items
+                DropdownMenuItem(
+                    text = { Text("Delete",
+                        style = TextStyle(
+                            fontFamily = poppins,
+                            fontWeight = FontWeight.W500,
+                            fontSize = 14.sp
+                        )
+                    )
+
+                    },
+                    onClick = {
+                        extend.value = false
+                        showDelete = true
+                    }
+                )
+            }
+        }
+
+        // Delete Dialogue for confirmation of items to delete
+        if(showDelete){
+            AlertDialog(
+                containerColor = Color.White,
+                onDismissRequest = {
+                    showDelete = false
+                },
+                title = { Text("Are you Sure?",
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600
+                    )
+                )},
+                text = { Text("Are you sure you want to delete this item",
+                    style = TextStyle(
+                        fontFamily = poppins,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.W500
+                    )
+
+                )},
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            todoHandler.deleteItems(itemId)
+                            fetchSaveData()
+                            showDelete = false
+                        }
+                    ) {
+                        Text(
+                            text = "Yes",
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W500,
+                                fontFamily = poppins,
+                                color = Color.Black
+                            )
+                        )
+
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDelete = false
+                        }
+                    ) {
+                        Text(
+                            text = "No",
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W500,
+                                fontFamily = poppins,
+                                color = Color.Black
+                            )
+                        )
+
+                    }
+                }
+            )
+        }
+    }
 
     // TextFiled for take user input
     @Composable

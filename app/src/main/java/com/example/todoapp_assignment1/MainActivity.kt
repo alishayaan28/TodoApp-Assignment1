@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,6 +32,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -193,85 +196,7 @@ class MainActivity : ComponentActivity() {
 
             // Alert Dialogue
          if(showDialog){
-             AlertDialog(
-                 containerColor = Color.White,
-                 onDismissRequest = {},
-                 confirmButton = {
-                     TextButton(
-                         onClick = {
-                             val data = todoHelper.addListItems(TodoList(0, inputText))
-
-                             if( inputText.isNotEmpty()){
-                                 if (data != -1L){
-                                     inputText = ""
-                                     showDialog = false
-                                     fetchSaveData()
-                                 }else{
-                                     Toast.makeText(this@MainActivity, "List with same name Already Exit. " +
-                                             "Please write another name.",Toast.LENGTH_SHORT).show()
-                                 }
-                             }
-                             else{
-                                 Toast.makeText(this@MainActivity, "Please Enter List name.",Toast.LENGTH_SHORT).show()
-                             }
-                         }
-                     ) {
-                         Text(
-                             text = "Add List",
-                             style = TextStyle(
-                                 fontSize = 12.sp,
-                                 fontWeight = FontWeight.W500,
-                                 fontFamily = poppins,
-                                 color = primaryColor
-                             )
-                         )
-
-                     }
-                 },
-                 text = {
-                     Column {
-                         OutlinedTextField(
-                             value = inputText,
-                             onValueChange = {
-                                 inputText = it
-                             },
-                             label = {
-                                 Text(
-                                     "Enter List Name",
-                                     style = TextStyle(
-                                         fontSize = 12.sp,
-                                         fontFamily = poppins
-                                     )
-                                 )
-                             },
-                             shape = RoundedCornerShape(12.dp),
-                             modifier = Modifier
-                                 .fillMaxWidth(),
-                             singleLine = true,
-                             textStyle = TextStyle(fontSize = 16.sp),
-                         )
-                     }
-                 },
-                 dismissButton = {
-                     TextButton(
-                         onClick = {
-                             inputText = ""
-                             showDialog = false
-                         }
-                     ) {
-                         Text(
-                             text = "Cancel",
-                             style = TextStyle(
-                                 fontSize = 12.sp,
-                                 fontWeight = FontWeight.W500,
-                                 fontFamily = poppins,
-                                 color = Color.Black
-                             )
-                         )
-
-                     }
-                 }
-             )
+             AddListDialogue(itemId = 0, inpTxt = inputText, dialog = { showDialog = false }, 1)
          }
 
         }
@@ -292,6 +217,10 @@ class MainActivity : ComponentActivity() {
     // Making a composable function for displaying of saved data
     @Composable
     fun DisplaySaveData(context: Context  ){
+
+        var editing by remember { mutableStateOf(false) }
+        var currentIndex by remember { mutableIntStateOf(-1) }
+
         LazyColumn {
             itemsIndexed(todoList){ index, item ->
                 Column (
@@ -319,6 +248,19 @@ class MainActivity : ComponentActivity() {
 
                         )
                         Spacer(modifier = Modifier.weight(1f))
+                        IconButton(
+                            onClick = {
+                                editing = true
+                                currentIndex = index
+                            }
+                        ) {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = "Edit",
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                         Icon(
                             Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = "forward",
@@ -328,11 +270,124 @@ class MainActivity : ComponentActivity() {
                     }
                     if(index < todoList.lastIndex ) HorizontalDivider()
                 }
-
             }
+        }
+        if(editing && currentIndex in todoList.indices){
+
+            AddListDialogue(itemId = todoList[currentIndex].id, inpTxt = todoList[currentIndex].listName, dialog = { editing = false }, -1)
 
         }
+    }
 
+    @Composable
+    fun AddListDialogue(itemId: Int , inpTxt : String, dialog : () -> Unit, isEdit : Int){
+
+        var inputText by remember { mutableStateOf(inpTxt) }
+
+        AlertDialog(
+            containerColor = Color.White,
+            onDismissRequest = {
+                dialog()
+            },
+            confirmButton = {
+               if (isEdit == -1){
+                   TextButton(
+                       onClick = {
+                           if (inputText.isNotEmpty()) {
+                               todoHelper.updateListName(itemId, inputText)
+                               fetchSaveData()
+                               dialog()
+                           } else {
+                               Toast.makeText(this@MainActivity, "This Field cannot be empty.",Toast.LENGTH_SHORT).show()
+                           }
+                       }) {
+                       Text(
+                           text = "Update",
+                           style = TextStyle(
+                               fontSize = 12.sp,
+                               fontWeight = FontWeight.W500,
+                               fontFamily = poppins,
+                               color = primaryColor
+                           )
+                       )
+
+                   }
+               } else {
+                   TextButton(
+                       onClick = {
+                           val data = todoHelper.addListItems(TodoList(0, inputText))
+                           if( inputText.isNotEmpty()){
+                               if (data != -1L){
+                                   inputText = ""
+                                   dialog()
+                                   fetchSaveData()
+                               }else{
+                                   Toast.makeText(this@MainActivity, "List with same name Already Exit. " +
+                                           "Please write another name.",Toast.LENGTH_SHORT).show()
+                               }
+                           }
+                           else{
+                               Toast.makeText(this@MainActivity, "Please Enter List name.",Toast.LENGTH_SHORT).show()
+                           }
+                       }
+                   ) {
+                       Text(
+                           text = "Add List",
+                           style = TextStyle(
+                               fontSize = 12.sp,
+                               fontWeight = FontWeight.W500,
+                               fontFamily = poppins,
+                               color = primaryColor
+                           )
+                       )
+
+                   }
+               }
+            },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = inputText,
+                        onValueChange = {
+                            inputText = it
+                        },
+                        label = {
+                            Text(
+                                "Enter List Name",
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    fontFamily = poppins
+                                )
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        singleLine = true,
+                        textStyle = TextStyle(fontSize = 16.sp),
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        inputText = ""
+                        dialog()
+                    }
+                ) {
+                    Text(
+                        text = "Cancel",
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.W500,
+                            fontFamily = poppins,
+                            color = Color.Black
+                        )
+                    )
+
+                }
+            }
+        )
     }
 
 }
