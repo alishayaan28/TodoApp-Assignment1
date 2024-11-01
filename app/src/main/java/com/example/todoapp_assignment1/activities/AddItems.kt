@@ -248,7 +248,7 @@ class AddItems : ComponentActivity() {
                             onClick = {
                                 if(inputTxt.isNotEmpty()){
                                     val emptyDate = dueDate?.let { convertMillisToDate(it) } ?: ""
-                                    todoHelper.addItems(TodoItems(0, 1, inputTxt, dueDate = emptyDate , 0))
+                                    todoHelper.addItems(TodoItems(0, uid, inputTxt, dueDate = emptyDate , 0))
                                     dialogue = false
                                     inputTxt = ""
                                     fetchSaveData()
@@ -469,7 +469,7 @@ class AddItems : ComponentActivity() {
                 text = { Text("Are you sure you want to delete this item",
                     style = TextStyle(
                         fontFamily = poppins,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.W500
                     )
 

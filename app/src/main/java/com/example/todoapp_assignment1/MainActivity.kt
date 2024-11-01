@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
             var showDialog by remember { mutableStateOf(false) }
 
             //TextField variable to access the text written
-            var inputText by remember { mutableStateOf("") }
+            val inputText by remember { mutableStateOf("") }
 
             TodoAppAssignment1Theme {
                 Scaffold(
@@ -175,7 +175,7 @@ class MainActivity : ComponentActivity() {
                                    )
                                    Card (
                                        modifier = Modifier
-                                           .padding(start = 10.dp, end = 10.dp, top = 5.dp)
+                                           .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 75.dp)
                                            .fillMaxWidth(),
                                        colors = CardDefaults.cardColors(
                                            containerColor = lightGrey
