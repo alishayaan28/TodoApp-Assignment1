@@ -118,7 +118,14 @@ class TodoHelper(context: Context)
         return db.update("TODOLIST", listState, "id= ?", arrayOf(itemId.toString()))
     }
 
-
-
+    // Function for check task is completed or not
+    fun updateListItems(itemId : Int, itemName : String, dueDate : String) : Int{
+        val db = writableDatabase
+        val listState = ContentValues().apply {
+            put("name", itemName)
+            put("dueDate", dueDate)
+        }
+        return db.update("TODOItems", listState, "id= ?", arrayOf(itemId.toString()))
+    }
 
 }

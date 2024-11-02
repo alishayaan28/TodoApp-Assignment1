@@ -1,15 +1,12 @@
 package com.example.todoapp_assignment1.activities
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.CheckBox
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -29,7 +26,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.MoreVert
@@ -40,7 +36,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -50,7 +45,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -79,7 +73,6 @@ import androidx.compose.ui.window.Dialog
 import com.example.todoapp_assignment1.activities.ui.theme.TodoAppAssignment1Theme
 import com.example.todoapp_assignment1.dataBase.TodoHelper
 import com.example.todoapp_assignment1.models.TodoItems
-import com.example.todoapp_assignment1.models.TodoList
 import com.example.todoapp_assignment1.ui.theme.lightGrey
 import com.example.todoapp_assignment1.ui.theme.poppins
 import com.example.todoapp_assignment1.ui.theme.primaryColor
@@ -115,10 +108,10 @@ class AddItems : ComponentActivity() {
             var dialogue by remember { mutableStateOf(false) }
 
             // text field
-            var inputTxt by remember { mutableStateOf("") }
+            val inputTxt by remember { mutableStateOf("") }
 
             // text field
-            var dueDate by remember { mutableStateOf<Long?>(null) }
+            val dueDate by remember { mutableStateOf<Long?>(null) }
 
             TodoAppAssignment1Theme {
                 Scaffold(
@@ -208,75 +201,8 @@ class AddItems : ComponentActivity() {
                 )
             }
             if(dialogue){
-                Dialog(onDismissRequest = { }) {
-                    Column (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(275.dp)
-                            .background(
-                                Color.White,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                    ){
-                        Row{
-                                IconButton(onClick = {
-                                   dialogue = false
-                                    inputTxt = ""
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Back",
-                                        tint = Color.Black
-                                    )
-                                }
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(
-                                text = "Create a Task",
-                                style = TextStyle(
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.W500,
-                                    fontFamily = poppins,
-                                    color = Color.Black
-                                ),
-                                modifier = Modifier.padding(top = 10.dp, end = 10.dp)
-                            )
-                            Spacer(modifier = Modifier.weight(2f))
-                        }
-                        TextFiled(inputTxt) { inputTxt = it }
-                        DatePickerFieldToModal(selectedDate = dueDate) { selectedDate -> dueDate = selectedDate }
-                        Button(
-                            onClick = {
-                                if(inputTxt.isNotEmpty()){
-                                    val emptyDate = dueDate?.let { convertMillisToDate(it) } ?: ""
-                                    todoHelper.addItems(TodoItems(0, uid, inputTxt, dueDate = emptyDate , 0))
-                                    dialogue = false
-                                    inputTxt = ""
-                                    fetchSaveData()
-                                }else{
-                                    Toast.makeText(this@AddItems, "Please Enter name.",
-                                        Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            enabled = true,
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(primaryColor)
-                        ) {
-                            Text(
-                                text = "Save",
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.W500,
-                                    fontFamily = poppins,
-                                    color = Color.White
-                                ),
-                            )
-                        }
-                    }
+                AddItemDialog(uid, inputTxt, dueDate, dismiss = { dialogue = false}, 1)
                 }
-            }
         }
     }
 
@@ -335,7 +261,7 @@ class AddItems : ComponentActivity() {
 
                             )
                         }
-                        PopUpMenu(data.id, todoHelper)
+                        PopUpMenu(data.id, todoHelper, todoListItems[index])
                     }
                 }
 
@@ -344,35 +270,13 @@ class AddItems : ComponentActivity() {
 
     }
 
-    // checkBox
-    @Composable
-    fun CheckBox(itemId : Int , todoHandler : TodoHelper, complete : Int){
-
-        val check = remember { mutableStateOf(complete != 0) }
-
-        Checkbox(
-            checked = check.value,
-            colors = CheckboxDefaults.colors(primaryColor),
-            onCheckedChange = {
-                val comVal = if(complete ==0 ){
-                    1 // true
-                }else{
-                    0 // false
-                }
-                todoHandler.updateCompleteState(itemId, comVal)
-                fetchSaveData()
-                check.value = comVal != 0
-            }
-        )
-    }
-
-
     // PopUp Menu for performing other functionality in my app
     @Composable
-    fun PopUpMenu(itemId : Int , todoHandler : TodoHelper){
+    fun PopUpMenu(itemId: Int, todoHandler: TodoHelper, editList: TodoItems){
 
         val extend = remember { mutableStateOf(false) }
         var showDelete by remember { mutableStateOf(false) }
+        var editing by remember { mutableStateOf(false) }
 
         Box(
             modifier = Modifier
@@ -425,10 +329,10 @@ class AddItems : ComponentActivity() {
                             fontSize = 14.sp
                         )
                     )
-
                     },
                     onClick = {
                         extend.value = false
+                        editing =  true
                     }
                 )
 
@@ -514,6 +418,157 @@ class AddItems : ComponentActivity() {
                 }
             )
         }
+
+
+        if(editing){
+
+            var dateString by remember { mutableStateOf<Long?>(null) }
+
+            // To handle crashing app whe n date is no given
+            if(editList.dueDate.isEmpty()){
+               dateString = null
+            }else{
+                 dateString = convertDateToMillis(editList.dueDate)
+            }
+
+            AddItemDialog(
+                itemId = editList.id,
+                input = editList.name,
+                date = dateString,
+                dismiss = { editing = false },
+                isEdit = -1
+            )
+        }
+    }
+
+    // Add Items Dialogue
+    @Composable
+    fun AddItemDialog(itemId : Int, input: String, date: Long?, dismiss : () -> Unit, isEdit : Int){
+
+        var inpTxt by remember { mutableStateOf(input)}
+        var dueDate by remember { mutableStateOf(date) }
+
+        Dialog(onDismissRequest = {
+            dismiss()
+        }) {
+            Column (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(275.dp)
+                    .background(
+                        Color.White,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            ){
+                Row{
+                    IconButton(onClick = {
+                        dismiss()
+                        inpTxt = ""
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "Create a Task",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W500,
+                            fontFamily = poppins,
+                            color = Color.Black
+                        ),
+                        modifier = Modifier.padding(top = 10.dp, end = 10.dp)
+                    )
+                    Spacer(modifier = Modifier.weight(2f))
+                }
+                TextFiled(inpTxt) { inpTxt = it }
+                DatePickerFieldToModal(selectedDate = dueDate) { selectedDate -> dueDate = selectedDate }
+                Button(
+                    onClick = {
+                       if(isEdit == -1){
+                           if(inpTxt.isNotEmpty()){
+                               val editDate = dueDate?.let { convertMillisToDate(it) } ?: ""
+                               todoHelper.updateListItems(itemId, inpTxt, editDate)
+                               dismiss()
+                               fetchSaveData()
+
+                           }else{
+                               Toast.makeText(this@AddItems, "Please Enter name.",
+                                   Toast.LENGTH_SHORT).show()
+                           }
+
+                       }else{
+                           if(inpTxt.isNotEmpty()){
+                               val emptyDate = dueDate?.let { convertMillisToDate(it) } ?: ""
+                               todoHelper.addItems(TodoItems(0, uid, inpTxt, dueDate = emptyDate , 0))
+                               dismiss()
+                               inpTxt = ""
+                               dueDate = null
+                               fetchSaveData()
+                           }else{
+                               Toast.makeText(this@AddItems, "Please Enter name.",
+                                   Toast.LENGTH_SHORT).show()
+                           }
+                       }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    enabled = true,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(primaryColor)
+                ) {
+                    if(isEdit == -1){
+
+                        Text(
+                            text = "Update",
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W500,
+                                fontFamily = poppins,
+                                color = Color.White
+                            ),
+                        )
+
+                    }else{
+                        Text(
+                            text = "Save",
+                            style = TextStyle(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W500,
+                                fontFamily = poppins,
+                                color = Color.White
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // checkBox
+    @Composable
+    fun CheckBox(itemId : Int , todoHandler : TodoHelper, complete : Int){
+
+        val check = remember { mutableStateOf(complete != 0) }
+
+        Checkbox(
+            checked = check.value,
+            colors = CheckboxDefaults.colors(primaryColor),
+            onCheckedChange = {
+                val comVal = if(complete ==0 ){
+                    1 // true
+                }else{
+                    0 // false
+                }
+                todoHandler.updateCompleteState(itemId, comVal)
+                fetchSaveData()
+                check.value = comVal != 0
+            }
+        )
     }
 
     // TextFiled for take user input
@@ -594,6 +649,11 @@ class AddItems : ComponentActivity() {
         return formatter.format(Date(millis))
     }
 
+    private fun convertDateToMillis(date: String): Long? {
+        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        return formatter.parse(date)?.time
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun DatePickerModal(
@@ -634,6 +694,4 @@ class AddItems : ComponentActivity() {
             DatePicker(state = datePickerState)
         }
     }
-
-
 }

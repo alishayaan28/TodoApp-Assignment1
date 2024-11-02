@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -33,6 +34,7 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -181,7 +183,7 @@ class MainActivity : ComponentActivity() {
                                            containerColor = lightGrey
                                        )
                                    ) {
-                                       DisplaySaveData(context = LocalContext.current)
+                                       DisplaySaveData()
                                    }
 
 
@@ -216,7 +218,7 @@ class MainActivity : ComponentActivity() {
 
     // Making a composable function for displaying of saved data
     @Composable
-    fun DisplaySaveData(context: Context  ){
+    fun DisplaySaveData(){
 
         var editing by remember { mutableStateOf(false) }
         var currentIndex by remember { mutableIntStateOf(-1) }
