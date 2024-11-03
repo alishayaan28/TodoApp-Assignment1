@@ -59,7 +59,6 @@ class TodoHelper(context: Context)
         return itemList
     }
 
-
     // Add Data Function for todoItems
     fun addItems(todoItems : TodoItems): Long {
         val db = writableDatabase
@@ -96,7 +95,7 @@ class TodoHelper(context: Context)
     }
 
     // Delete Function for todoItems
-    fun deleteItems(itemId: Int): Int {
+    fun deleteListItems(itemId: Int): Int {
         writableDatabase.use { database -> return database.delete("TODOItems", "id= ?", arrayOf(itemId.toString()))}
     }
 
@@ -126,6 +125,21 @@ class TodoHelper(context: Context)
             put("dueDate", dueDate)
         }
         return db.update("TODOItems", listState, "id= ?", arrayOf(itemId.toString()))
+    }
+
+
+
+
+    // Function for move item from one list to another
+    fun moveListItem(item: TodoItems): Int {
+        val db = writableDatabase
+        val listState = ContentValues().apply {
+            put("listId", item.listId)
+            put("name", item.name)
+            put("dueDate", item.dueDate)
+            put("complete", item.isComplete)
+        }
+        return db.update("TODOItems", listState, "id= ?", arrayOf(item.id.toString()))
     }
 
 }

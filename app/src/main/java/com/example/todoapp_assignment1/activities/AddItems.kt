@@ -13,15 +13,26 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,6 +42,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,16 +59,19 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,10 +88,15 @@ import androidx.compose.ui.window.Dialog
 import com.example.todoapp_assignment1.activities.ui.theme.TodoAppAssignment1Theme
 import com.example.todoapp_assignment1.dataBase.TodoHelper
 import com.example.todoapp_assignment1.models.TodoItems
+import com.example.todoapp_assignment1.models.TodoList
 import com.example.todoapp_assignment1.ui.theme.lightGrey
 import com.example.todoapp_assignment1.ui.theme.poppins
 import com.example.todoapp_assignment1.ui.theme.primaryColor
+import com.example.todoapp_assignment1.ui.theme.redColor
+import com.example.todoapp_assignment1.ui.theme.yellowColor
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -91,6 +111,7 @@ class AddItems : ComponentActivity() {
     //Declare a new variable to show saved data
     private var todoListItems by mutableStateOf<List<TodoItems>>(emptyList())
 
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -99,7 +120,6 @@ class AddItems : ComponentActivity() {
 
         // Getting id of list
        uid = intent.getIntExtra("uid", 0)
-
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -181,7 +201,64 @@ class AddItems : ComponentActivity() {
                             paddingValues ->
                         Box(modifier = Modifier.padding(paddingValues)){
                            if(todoListItems.isNotEmpty()){
-                               ShowItemData()
+
+                               Column {
+                                   Row {
+                                       Card(
+                                           modifier = Modifier
+                                               .weight(0.5f)
+                                               .aspectRatio(2f)
+                                               .padding(
+                                                   start = 10.dp,
+                                                   end = 10.dp,
+                                                   top = 10.dp,
+                                                   bottom = 10.dp
+                                               ),
+                                           colors = CardDefaults.cardColors(lightGrey)
+                                       ) {
+                                           Text(
+                                               text = "Total ",
+                                               modifier = Modifier.padding(4.dp),
+                                               color = Color.Black,
+                                               style = TextStyle(
+                                                   fontFamily = poppins,
+                                                   fontWeight = FontWeight.W500,
+                                                   fontSize = 16.sp
+                                               )
+
+                                           )
+                                       }
+
+                                       Card(
+                                           modifier = Modifier
+                                               .weight(0.5f)
+                                               .aspectRatio(2f)
+                                               .padding(
+                                                   start = 10.dp,
+                                                   end = 10.dp,
+                                                   top = 10.dp,
+                                                   bottom = 10.dp
+                                               ),
+                                           colors = CardDefaults.cardColors(lightGrey)
+                                       ) {
+                                           Text(
+                                               text = "complete ",
+                                               modifier = Modifier.padding(4.dp),
+                                               color = Color.Black,
+                                               style = TextStyle(
+                                                   fontFamily = poppins,
+                                                   fontWeight = FontWeight.W500,
+                                                   fontSize = 16.sp
+                                               )
+
+                                           )
+                                       }
+
+
+                                   }
+                                   ShowItemData()
+                               }
+
                            }else{
                                Text(
                                    text = "No Data Found",
@@ -221,11 +298,23 @@ class AddItems : ComponentActivity() {
     //Show saved items data
     @Composable
     fun ShowItemData(){
-        LazyColumn {
+
+        val calender = Calendar.getInstance()
+        val currentDate = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(calender.time)
+
+        LazyColumn  (
+            modifier = Modifier.padding(bottom = 75.dp)
+        ){
             itemsIndexed(todoListItems){ index, data ->
                 Card (
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp),
-                    colors = CardDefaults.cardColors(Color.White),
+                    colors = if(todoListItems[index].dueDate == currentDate){
+                        CardDefaults.cardColors(yellowColor)
+                    } else if(todoListItems[index].dueDate <= currentDate) {
+                        CardDefaults.cardColors(redColor)
+                    } else {
+                        CardDefaults.cardColors(Color.White)
+                    },
                     border = BorderStroke(1.dp, lightGrey)
                 ) {
                     Row (
@@ -261,7 +350,7 @@ class AddItems : ComponentActivity() {
 
                             )
                         }
-                        PopUpMenu(data.id, todoHelper, todoListItems[index])
+                        PopUpMenu(data.id, todoHelper, todoListItems[index], todoListItems)
                     }
                 }
 
@@ -272,11 +361,12 @@ class AddItems : ComponentActivity() {
 
     // PopUp Menu for performing other functionality in my app
     @Composable
-    fun PopUpMenu(itemId: Int, todoHandler: TodoHelper, editList: TodoItems){
+    fun PopUpMenu(itemId: Int, todoHandler: TodoHelper, editList: TodoItems, listTodo : List<TodoItems>){
 
         val extend = remember { mutableStateOf(false) }
         var showDelete by remember { mutableStateOf(false) }
         var editing by remember { mutableStateOf(false) }
+        var move by remember { mutableStateOf(false) }
 
         Box(
             modifier = Modifier
@@ -317,6 +407,7 @@ class AddItems : ComponentActivity() {
                     },
                     onClick = {
                         extend.value = false
+                        move = true
                     }
                 )
 
@@ -358,7 +449,7 @@ class AddItems : ComponentActivity() {
         // Delete Dialogue for confirmation of items to delete
         if(showDelete){
             AlertDialog(
-                containerColor = Color.White,
+                containerColor = lightGrey,
                 onDismissRequest = {
                     showDelete = false
                 },
@@ -381,7 +472,7 @@ class AddItems : ComponentActivity() {
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            todoHandler.deleteItems(itemId)
+                            todoHandler.deleteListItems(itemId)
                             fetchSaveData()
                             showDelete = false
                         }
@@ -413,18 +504,17 @@ class AddItems : ComponentActivity() {
                                 color = Color.Black
                             )
                         )
-
                     }
                 }
             )
         }
 
-
+        // show dialog for editing
         if(editing){
 
             var dateString by remember { mutableStateOf<Long?>(null) }
 
-            // To handle crashing app whe n date is no given
+            // To handle crashing app whe no date is no given
             if(editList.dueDate.isEmpty()){
                dateString = null
             }else{
@@ -438,6 +528,17 @@ class AddItems : ComponentActivity() {
                 dismiss = { editing = false },
                 isEdit = -1
             )
+        }
+
+        // show dialog for move item
+        if(move){
+
+            // excluding the current list so the item cannot move to the same list
+            val list = todoHandler.getAllList()
+            val sortList = listTodo.first{ it.id == itemId}.listId
+            val finalList = list.filter { it.id != sortList }
+
+            MoveItemsDialog(itemId = itemId, dismiss = { move = false }, finalList)
         }
     }
 
@@ -456,7 +557,7 @@ class AddItems : ComponentActivity() {
                     .fillMaxWidth()
                     .height(275.dp)
                     .background(
-                        Color.White,
+                        lightGrey,
                         shape = RoundedCornerShape(12.dp)
                     )
             ){
@@ -544,6 +645,99 @@ class AddItems : ComponentActivity() {
                             ),
                         )
                     }
+                }
+            }
+        }
+    }
+
+    // Move item from one list to another
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MoveItemsDialog(itemId : Int,  dismiss : () -> Unit, allList : List<TodoList>){
+
+        var listId by remember { mutableStateOf(allList.firstOrNull()?.id) }
+
+        // code taken from Android Developers official site of bottom sheet
+        val sheetState = rememberModalBottomSheetState()
+
+        ModalBottomSheet(
+            onDismissRequest = {
+               dismiss()
+            },
+            sheetState = sheetState,
+            modifier = Modifier
+                .height(500.dp)
+                .padding(bottom = 70.dp),
+            containerColor = Color.White
+        ){
+            Column(
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.fillMaxSize()
+            ){
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(10.dp)
+                ) {
+                    items(allList.size){ index ->
+                        val listItem = allList[index]
+
+                        Card (
+                            modifier = Modifier.padding(8.dp),
+                            colors = CardDefaults.cardColors(lightGrey)
+                        ) {
+                            Row (
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .padding(10.dp)
+                            ){
+                                Text(
+                                    text = listItem.listName,
+                                    style = TextStyle(
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.W500,
+                                        fontFamily = poppins,
+                                        color = Color.Black
+                                    )
+                                )
+                                Spacer(modifier = Modifier.weight(1F))
+                                Checkbox(checked = (listId == listItem.id) ,
+                                    onCheckedChange = {
+                                            checkItem ->
+                                        if(checkItem){
+                                            listId = listItem.id
+                                        }
+                                    }
+                                )
+
+                            }
+                        }
+                    }
+                }
+
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(primaryColor),
+                    modifier = Modifier.padding(end = 20.dp, bottom = 8.dp),
+                    onClick = {
+                        if(listId != null){
+                            val data = todoHelper.getAllListItems(itemId)
+                            todoHelper.moveListItem(data)
+                        }
+                    }) {
+                    Text(
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                        text = "Move",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W500,
+                            fontFamily = poppins,
+                            color = Color.White
+                        )
+                    )
                 }
             }
         }
