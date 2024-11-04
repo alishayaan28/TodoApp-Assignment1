@@ -159,7 +159,6 @@ class MainActivity : ComponentActivity() {
                                    }
 
                                }else{
-
                                    Text(
                                        text = "My Lists",
                                        modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 5.dp),

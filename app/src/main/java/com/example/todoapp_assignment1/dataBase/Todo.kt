@@ -127,9 +127,6 @@ class TodoHelper(context: Context)
         return db.update("TODOItems", listState, "id= ?", arrayOf(itemId.toString()))
     }
 
-
-
-
     // Function for move item from one list to another
     fun moveListItem(item: TodoItems): Int {
         val db = writableDatabase
@@ -140,6 +137,25 @@ class TodoHelper(context: Context)
             put("complete", item.isComplete)
         }
         return db.update("TODOItems", listState, "id= ?", arrayOf(item.id.toString()))
+    }
+
+    // Get id of list to move item from one list to another
+    fun moveBuItemID(uid: Int): TodoItems? {
+        var itemList : TodoItems? = null
+        val db = readableDatabase
+        val cursor: Cursor = db.rawQuery("SELECT * FROM TODOItems WHERE id = ?", arrayOf(uid.toString()))
+
+        if (cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+            val listName = cursor.getInt(cursor.getColumnIndexOrThrow("listId"))
+            val name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+            val dueDate = cursor.getString(cursor.getColumnIndexOrThrow("dueDate"))
+            val complete = cursor.getInt(cursor.getColumnIndexOrThrow("complete"))
+            itemList = TodoItems(id, listName, name, dueDate, complete)
+        }
+        cursor.close()
+        db.close()
+        return itemList
     }
 
 }

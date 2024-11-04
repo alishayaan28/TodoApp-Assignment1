@@ -7,7 +7,7 @@ data class  TodoList(
 
 data class TodoItems(
     val id : Int,
-    val listId : Int,
+    var listId : Int,
     val name : String,
     val dueDate : String,
     val isComplete : Int
