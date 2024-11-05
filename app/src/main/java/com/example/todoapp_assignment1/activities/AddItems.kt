@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -64,6 +63,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -104,6 +104,8 @@ class AddItems : ComponentActivity() {
     //Declare a new variable to show saved data
     private var todoListItems by mutableStateOf<List<TodoItems>>(emptyList())
 
+    //
+    private var completeCount by mutableIntStateOf(0)
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -220,6 +222,17 @@ class AddItems : ComponentActivity() {
                                                )
 
                                            )
+                                           Text(
+                                               text = "${todoListItems.size}",
+                                               modifier = Modifier.padding(4.dp),
+                                               color = Color.Black,
+                                               style = TextStyle(
+                                                   fontFamily = poppins,
+                                                   fontWeight = FontWeight.W500,
+                                                   fontSize = 16.sp
+                                               )
+
+                                           )
                                        }
 
                                        Card(
@@ -236,6 +249,17 @@ class AddItems : ComponentActivity() {
                                        ) {
                                            Text(
                                                text = "complete ",
+                                               modifier = Modifier.padding(4.dp),
+                                               color = Color.Black,
+                                               style = TextStyle(
+                                                   fontFamily = poppins,
+                                                   fontWeight = FontWeight.W500,
+                                                   fontSize = 16.sp
+                                               )
+
+                                           )
+                                           Text(
+                                               text = "$completeCount",
                                                modifier = Modifier.padding(4.dp),
                                                color = Color.Black,
                                                style = TextStyle(
@@ -286,6 +310,7 @@ class AddItems : ComponentActivity() {
     private fun fetchSaveData(){
         val reverseList = todoHelper.getAllListItems(uid)
         todoListItems =  reverseList.reversed()
+        completeCount = todoListItems.count{it.isComplete == 1}
     }
 
     //Show saved items data
@@ -308,14 +333,7 @@ class AddItems : ComponentActivity() {
                 }
                 Log.e("dueDate", todoListItems[index].dueDate)
                 Card (
-                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp)
-                        .clickable(
-                            onClick = {
-                                // for check of values
-                                Toast.makeText(this@AddItems, "due>>${todoListItems[index].dueDate}", Toast.LENGTH_SHORT).show()
-                                Toast.makeText(this@AddItems, "inp>>${todoListItems[index].name}", Toast.LENGTH_SHORT).show()
-                            }
-                        ),
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp),
                     colors = CardDefaults.cardColors(card),
                     border = BorderStroke(1.dp, lightGrey)
                 ) {
@@ -496,7 +514,7 @@ class AddItems : ComponentActivity() {
                         Text(
                             text = "Yes",
                             style = TextStyle(
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.W500,
                                 fontFamily = poppins,
                                 color = Color.Black
@@ -514,7 +532,7 @@ class AddItems : ComponentActivity() {
                         Text(
                             text = "No",
                             style = TextStyle(
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.W500,
                                 fontFamily = poppins,
                                 color = Color.Black
