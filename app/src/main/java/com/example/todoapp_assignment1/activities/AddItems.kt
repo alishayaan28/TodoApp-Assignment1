@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -75,10 +76,15 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.todoapp_assignment1.activities.ui.theme.TodoAppAssignment1Theme
 import com.example.todoapp_assignment1.dataBase.TodoHelper
 import com.example.todoapp_assignment1.models.TodoItems
@@ -104,8 +110,11 @@ class AddItems : ComponentActivity() {
     //Declare a new variable to show saved data
     private var todoListItems by mutableStateOf<List<TodoItems>>(emptyList())
 
-    //
+    // complete variable to count task completed in the list
     private var completeCount by mutableIntStateOf(0)
+
+    // upcoming Due date
+    private var upcomingDate by mutableStateOf("")
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,6 +136,11 @@ class AddItems : ComponentActivity() {
 
             // text field
             val dueDate by remember { mutableStateOf<Long?>(null) }
+
+            //Lottie Animation
+            val lottieAnimation by rememberLottieComposition(
+                spec = LottieCompositionSpec.Asset("emptyList.json")
+            )
 
             TodoAppAssignment1Theme {
                 Scaffold(
@@ -212,8 +226,8 @@ class AddItems : ComponentActivity() {
                                            colors = CardDefaults.cardColors(lightGrey)
                                        ) {
                                            Text(
-                                               text = "Total ",
-                                               modifier = Modifier.padding(4.dp),
+                                               text = "Total Items",
+                                               modifier = Modifier.padding(8.dp),
                                                color = Color.Black,
                                                style = TextStyle(
                                                    fontFamily = poppins,
@@ -224,7 +238,7 @@ class AddItems : ComponentActivity() {
                                            )
                                            Text(
                                                text = "${todoListItems.size}",
-                                               modifier = Modifier.padding(4.dp),
+                                               modifier = Modifier.padding(5.dp),
                                                color = Color.Black,
                                                style = TextStyle(
                                                    fontFamily = poppins,
@@ -248,8 +262,8 @@ class AddItems : ComponentActivity() {
                                            colors = CardDefaults.cardColors(lightGrey)
                                        ) {
                                            Text(
-                                               text = "complete ",
-                                               modifier = Modifier.padding(4.dp),
+                                               text = "Completed Items",
+                                               modifier = Modifier.padding(8.dp),
                                                color = Color.Black,
                                                style = TextStyle(
                                                    fontFamily = poppins,
@@ -260,7 +274,7 @@ class AddItems : ComponentActivity() {
                                            )
                                            Text(
                                                text = "$completeCount",
-                                               modifier = Modifier.padding(4.dp),
+                                               modifier = Modifier.padding(5.dp),
                                                color = Color.Black,
                                                style = TextStyle(
                                                    fontFamily = poppins,
@@ -269,27 +283,71 @@ class AddItems : ComponentActivity() {
                                                )
 
                                            )
+
+
                                        }
 
+                                   }
+                                   Card(
+                                       modifier = Modifier
+                                           .fillMaxWidth()
+                                           .height(100.dp)
+                                           .padding(
+                                               start = 10.dp, end = 10.dp,
+                                               top = 10.dp, bottom = 10.dp
+                                           ),
+                                       colors = CardDefaults.cardColors(lightGrey)
+                                   ) {
+                                       Text(
+                                           text = "Upcoming Due Date",
+                                           modifier = Modifier.padding(8.dp),
+                                           color = Color.Black,
+                                           style = TextStyle(
+                                               fontFamily = poppins,
+                                               fontWeight = FontWeight.W500,
+                                               fontSize = 16.sp
+                                           )
 
+                                       )
+
+                                       Text(
+                                           text = upcomingDate,
+                                           modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                                           color = Color.Black,
+                                           style = TextStyle(
+                                               fontFamily = poppins,
+                                               fontWeight = FontWeight.W500,
+                                               fontSize = 16.sp
+                                           )
+
+                                       )
                                    }
                                    ShowItemData()
                                }
 
                            }else{
-                               Text(
-                                   text = "No Data Found",
-                                   modifier = Modifier.padding(4.dp),
-                                   color = Color.Black,
-                                   style = TextStyle(
-                                       fontFamily = poppins,
-                                       fontWeight = FontWeight.W500,
-                                       fontSize = 16.sp
+
+                               Column (
+                                   modifier = Modifier.fillMaxSize(),
+                                   verticalArrangement = Arrangement.Center,
+                                   horizontalAlignment = Alignment.CenterHorizontally
+                               ) {
+                                   LottieAnimation(
+                                       composition = lottieAnimation,
+                                       iterations = LottieConstants.IterateForever
                                    )
-
-                               )
+                                   Text(
+                                       text = "No Item Found",
+                                       modifier = Modifier.padding(4.dp),
+                                       color = Color.Black,
+                                       style = TextStyle(
+                                           fontFamily = poppins,
+                                           fontWeight = FontWeight.W500,
+                                           fontSize = 16.sp
+                                       )
+                                   )
+                               }
                            }
-
                         }
                     }
                 )
@@ -311,6 +369,8 @@ class AddItems : ComponentActivity() {
         val reverseList = todoHelper.getAllListItems(uid)
         todoListItems =  reverseList.reversed()
         completeCount = todoListItems.count{it.isComplete == 1}
+        upcomingDate = todoListItems.filter { it.dueDate.isNotEmpty()}
+            .minByOrNull { it.dueDate }?.dueDate ?: "No nearest date found."
     }
 
     //Show saved items data
@@ -688,8 +748,6 @@ class AddItems : ComponentActivity() {
     @Composable
     fun MoveItemsDialog(itemId : Int,  dismiss : () -> Unit, allList : List<TodoList>){
 
-        Toast.makeText(this@AddItems,"id...${itemId}", Toast.LENGTH_SHORT).show()
-
         var listId by remember { mutableStateOf(allList.firstOrNull()?.id) }
 
         // code taken from Android Developers official site of bottom sheet
@@ -706,60 +764,73 @@ class AddItems : ComponentActivity() {
             containerColor = Color.White
         ){
             Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ){
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(10.dp)
-                ) {
-                    items(allList.size){ index ->
-                        val listItem = allList[index]
+                if(allList.isEmpty()){
+                    Text(
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                            .align(Alignment.CenterHorizontally),
+                        text = "No List Found to move Items.",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W500,
+                            fontFamily = poppins,
+                            color = Color.Black
+                        )
+                    )
+                } else{
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentPadding = PaddingValues(10.dp)
+                    ) {
+                        items(allList.size){ index ->
+                            val listItem = allList[index]
 
-                        Card (
-                            modifier = Modifier.padding(8.dp),
-                            colors = CardDefaults.cardColors(lightGrey)
-                        ) {
-                            Row (
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp)
-                                    .padding(10.dp)
-                            ){
-                                Text(
-                                    text = listItem.listName,
-                                    style = TextStyle(
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W500,
-                                        fontFamily = poppins,
-                                        color = Color.Black
+                            Card (
+                                modifier = Modifier.padding(8.dp),
+                                colors = CardDefaults.cardColors(lightGrey)
+                            ) {
+                                Row (
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .padding(10.dp)
+                                ){
+                                    Text(
+                                        text = listItem.listName,
+                                        style = TextStyle(
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.W500,
+                                            fontFamily = poppins,
+                                            color = Color.Black
+                                        )
                                     )
-                                )
-                                Spacer(modifier = Modifier.weight(1F))
-                                Checkbox(checked = (listId == listItem.id) ,
-                                    onCheckedChange = {
-                                            checkItem ->
-                                        if(checkItem){
-                                            listId = listItem.id
+                                    Spacer(modifier = Modifier.weight(1F))
+                                    Checkbox(checked = (listId == listItem.id) ,
+                                        onCheckedChange = {
+                                                checkItem ->
+                                            if(checkItem){
+                                                listId = listItem.id
+                                            }
                                         }
-                                    }
-                                )
+                                    )
 
+                                }
                             }
                         }
                     }
                 }
-
+                Spacer(modifier = Modifier.weight(1f))
                 TextButton(
                     colors = ButtonDefaults.buttonColors(primaryColor),
-                    modifier = Modifier.padding(end = 20.dp, bottom = 8.dp),
+                    modifier = Modifier.padding(end = 20.dp, bottom = 8.dp)
+                        .align(Alignment.End),
                     onClick = {
                         val moveItem = todoHelper.moveBuItemID(itemId)
-                        Toast.makeText(this@AddItems, "..${moveItem}", Toast.LENGTH_SHORT).show()
                         if (moveItem != null) {
                             moveItem.listId = listId!!
                             todoHelper.moveListItem(moveItem)
@@ -810,6 +881,9 @@ class AddItems : ComponentActivity() {
         OutlinedTextField(
             value = input,
             onValueChange = changeInput,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text
+            ),
             label = {
                 Text(
                     "Enter Name",

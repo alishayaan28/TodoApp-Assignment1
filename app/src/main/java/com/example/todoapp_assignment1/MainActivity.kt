@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -49,8 +51,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.todoapp_assignment1.activities.AddItems
 import com.example.todoapp_assignment1.dataBase.TodoHelper
 import com.example.todoapp_assignment1.models.TodoList
@@ -84,6 +91,11 @@ class MainActivity : ComponentActivity() {
 
             //TextField variable to access the text written
             val inputText by remember { mutableStateOf("") }
+
+            //Lottie Animation
+            val lottieAnimation by rememberLottieComposition(
+                spec = LottieCompositionSpec.Asset("emptyList.json")
+            )
 
             TodoAppAssignment1Theme {
                 Scaffold(
@@ -142,11 +154,18 @@ class MainActivity : ComponentActivity() {
                         paddingValues ->
                         Box(modifier = Modifier.padding(paddingValues)){
                            Column {
-
                                if(todoList.isEmpty()){
-                                   Column{
+                                   Column(
+                                       modifier = Modifier.fillMaxSize(),
+                                       verticalArrangement = Arrangement.Center,
+                                       horizontalAlignment = Alignment.CenterHorizontally
+                                   ) {
+                                      LottieAnimation(
+                                          composition = lottieAnimation,
+                                          iterations = LottieConstants.IterateForever
+                                      )
                                        Text(
-                                           text = "No Data Found",
+                                           text = "No List Found",
                                            modifier = Modifier.padding(4.dp),
                                            color = Color.Black,
                                            style = TextStyle(
@@ -157,8 +176,7 @@ class MainActivity : ComponentActivity() {
 
                                        )
                                    }
-
-                               }else{
+                               } else{
                                    Text(
                                        text = "My Lists",
                                        modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 5.dp),
@@ -172,7 +190,12 @@ class MainActivity : ComponentActivity() {
                                    )
                                    Card (
                                        modifier = Modifier
-                                           .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 75.dp)
+                                           .padding(
+                                               start = 10.dp,
+                                               end = 10.dp,
+                                               top = 5.dp,
+                                               bottom = 75.dp
+                                           )
                                            .fillMaxWidth(),
                                        colors = CardDefaults.cardColors(
                                            containerColor = lightGrey
@@ -348,6 +371,9 @@ class MainActivity : ComponentActivity() {
                         onValueChange = {
                             inputText = it
                         },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
                         label = {
                             Text(
                                 "Enter List Name",
