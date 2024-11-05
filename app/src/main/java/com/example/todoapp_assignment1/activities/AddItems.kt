@@ -107,7 +107,7 @@ class AddItems : ComponentActivity() {
     // id variable for showing item of list in which data is added
     private var uid = 0
 
-    //Declare a new variable to show saved data
+    // Declare a new variable to show saved data
     private var todoListItems by mutableStateOf<List<TodoItems>>(emptyList())
 
     // complete variable to count task completed in the list
@@ -119,7 +119,7 @@ class AddItems : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        //Initializing Database
+        // Initializing Database
        todoHelper = TodoHelper(this)
 
         // Getting id of list
@@ -137,7 +137,7 @@ class AddItems : ComponentActivity() {
             // text field
             val dueDate by remember { mutableStateOf<Long?>(null) }
 
-            //Lottie Animation
+            // Lottie Animation
             val lottieAnimation by rememberLottieComposition(
                 spec = LottieCompositionSpec.Asset("emptyList.json")
             )
@@ -902,6 +902,16 @@ class AddItems : ComponentActivity() {
         )
     }
 
+    private fun convertMillisToDate(millis: Long): String {
+        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        return formatter.format(Date(millis))
+    }
+
+    private fun convertDateToMillis(date: String): Long? {
+        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        return formatter.parse(date)?.time
+    }
+
     // DatePicker Code Taken from Android Developer Official Site
     @Composable
     fun DatePickerFieldToModal(modifier: Modifier = Modifier, selectedDate: Long?, onDateSelected: (Long?) -> Unit) {
@@ -949,16 +959,6 @@ class AddItems : ComponentActivity() {
                 onDismiss = { showModal.value = false }
             )
         }
-    }
-
-    private fun convertMillisToDate(millis: Long): String {
-        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        return formatter.format(Date(millis))
-    }
-
-    private fun convertDateToMillis(date: String): Long? {
-        val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        return formatter.parse(date)?.time
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

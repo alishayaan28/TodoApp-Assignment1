@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
     // Declare the variable of database
     private lateinit var todoHelper: TodoHelper
 
-    //Declare a new variable to show saved data
+    // Declare a new variable to show saved data
     private var todoList by mutableStateOf<List<TodoList>>(emptyList())
 
 
@@ -89,10 +89,10 @@ class MainActivity : ComponentActivity() {
             // variable for display alert dialogue
             var showDialog by remember { mutableStateOf(false) }
 
-            //TextField variable to access the text written
+            // TextField variable to access the text written
             val inputText by remember { mutableStateOf("") }
 
-            //Lottie Animation
+            // Lottie Animation
             val lottieAnimation by rememberLottieComposition(
                 spec = LottieCompositionSpec.Asset("emptyList.json")
             )
